@@ -29,24 +29,41 @@ app.get("/*", (_, res) => res.redirect("/"));
 
 const handleListen = () => console.log(`Listening on http://localhost:3000`);
 
-
-
-
 // ws(웹 소켓) 사용을 위한 작업
 const server = http.createServer(app);
 // ws 서버 (웹소켓 서버 줄인말) 사용
 const wss = new WebSocket.Server({server});
 
+function onSocketClose() {
+  console.log("Disconnected from the Browser ❌");
+}
+
+
+//페이크 디비 생성 (모든 브라우저가 소켓을 받게 하기 위함)
+const sockets = [];
+
 // ws에서의 이벤트 처리 -> 메시지 보내보기
 wss.on("connection", (socket)=> {
+  //모든 소켓이 메시지를 보내면 받을 수 있음 (모든 브라우저)
+    sockets.push(socket);
+    socket["nickname"] = "익명";
+    //서버와 연결 확인용
     console.log("Connected to Browser ✅");
-      //app.js 에서 close 이벤트를 사용하기 위함
-    //on메소드가 이걸 가능하게 해줌-> ws와 연결이 되야지 이벤트가 작동함
-    socket.on("close", () => console.log("Disconnected from the Browser ❌"));
-    socket.on("message", (message) => {
-      console.log(message);
+    socket.on("close", onSocketClose);
+
+    //모든 소켓에 메시지 보내기
+    socket.on("message", (msg) => {
+      const message = JSON.parse(msg); //제이슨 형식으로 보내겠다.
+      switch (message.type) {
+        case "new_message":
+          sockets.forEach((aSocket) =>
+          //닉네임과 내용 보내기 
+            aSocket.send(`${socket.nickname}: ${message.payload}`)
+          );
+        case "nickname": 
+          socket["nickname"] = message.payload;
+      }
     });
-    socket.send("hello!!!");
   });
   
 

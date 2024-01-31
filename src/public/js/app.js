@@ -4,27 +4,59 @@
 
 //여기는기능 부분 js
 
+//html에서 메시지를 다당
+const messageList = document.querySelector("ul");
+const nickForm = document.querySelector('#nick');
+const messageForm = document.querySelector("#message");
+
 /* 프론트와 벡을 연동하는 부분 (ws) + 
 위치를 우리가 어디에 있는지로 수정(window.location.host) */
 const socket = new WebSocket(`ws://${window.location.host}`);
 
-//서버에서 보낸 메시지 받기 
-//1단계 서버와 연결
-socket.addEventListener("open", ()=> {
-    console.log("서버와 연결✅");
-});
+// string을 옵젝으로 만들기 (json으로 보내고 읽을 수 있도록!!)
+function makeMessage(type, payload) {
+    const msg = { type, payload };
+    return JSON.stringify(msg);
+  }
 
-//2단계 메시지 받기
+function handleOpen() {
+    console.log("Connected to Server ✅");
+  }
+  
+  socket.addEventListener("open", handleOpen);
+
+
+// 메시지 받기
 socket.addEventListener("message", (message)=> {
-    console.log("새로운 메시지: " , message.data);
+    //여기에 li (화면에 메시지 출력)
+    const li = document.createElement("li");
+    li.innerText = message.data;
+    messageList.append(li);
 });
 
-//번외 close 이벤트
+// close 이벤트
 socket.addEventListener("close" , ()=> {
     console.log("서버와 연결❌");
 });
 
-//서버와 연결 후 5초 후에 메시지
-setTimeout(() => {
-    socket.send("안녕 연결됐엉~");
-}, 5000);
+//메시지 이벤트 리스너 처리
+function handleSubmit(event) {
+    event.preventDefault();
+    const input = messageForm.querySelector("input");
+    socket.send(makeMessage("new_message", input.value));
+    const li = document.createElement("li");
+    li.innerText = `You: ${input.value}`;
+    messageList.append(li);
+    input.value = "";
+  }
+  
+
+function handleNickSubmit(event){
+    event.preventDefault();
+    const input = nickForm.querySelector("input");
+    socket.send(makeMessage("nickname", input.value));
+    input.value = "";
+}
+
+messageForm.addEventListener("submit" , handleSubmit);
+nickForm.addEventListener("submit", handleNickSubmit);
