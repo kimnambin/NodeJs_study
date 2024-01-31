@@ -1,11 +1,10 @@
 //여기는 express을 이용한 프레임 워크라고 생각하면 됨
 //express로는 view를 설정 + render (페이지 렌더)
-// http + ws 둘다 사용
+
 
 import express from "express";
-//ws 사용을 위함
 import http from "http";
-import WebSocket from "ws";
+import SocketIO from "socket.io";
 
 const app = express(); 
 
@@ -25,20 +24,35 @@ app.get("/", (_ , res) => res.render("home"));
 //유저가 어디로 이동할 때마다 반응
 app.get("/*", (_, res) => res.redirect("/"));
 
-/* ---------------------------여기까지 app------------------------- */
+/* ---------------------------여기까지 app (expressJS)------------------------- */
 
-const handleListen = () => console.log(`Listening on http://localhost:3000`);
+//소켓 io 서버로 보내는 과정
+const httpServer = http.createServer(app);
+const wsServer = SocketIO(httpServer);
 
-// ws(웹 소켓) 사용을 위한 작업
-const server = http.createServer(app);
-// ws 서버 (웹소켓 서버 줄인말) 사용
-const wss = new WebSocket.Server({server});
+wsServer.on("connection" , (socket) => {
+  socket.on("enter_room" , (msg, done) => {
+    console.log(msg);
+    setTimeout(() => {
+      done();
+    } , 1000);
+  });
+});
 
-function onSocketClose() {
-  console.log("Disconnected from the Browser ❌");
-}
+const handleListen = () =>
+console.log(`Listening on http://localhost:3000`);
+httpServer.listen(3000,handleListen);
 
 
+
+
+
+
+
+
+
+
+/* 소켓 -> 소켓 io 사용하기 위함 
 //페이크 디비 생성 (모든 브라우저가 소켓을 받게 하기 위함)
 const sockets = [];
 
@@ -56,6 +70,7 @@ wss.on("connection", (socket)=> {
       const message = JSON.parse(msg); //제이슨 형식으로 보내겠다.
       switch (message.type) {
         case "new_message":
+          //foreach는 배열하는 코드
           sockets.forEach((aSocket) =>
           //닉네임과 내용 보내기 
             aSocket.send(`${socket.nickname}: ${message.payload}`)
@@ -64,7 +79,4 @@ wss.on("connection", (socket)=> {
           socket["nickname"] = message.payload;
       }
     });
-  });
-  
-
-  server.listen(3000,handleListen);
+  });*/
