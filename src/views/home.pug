@@ -14,8 +14,14 @@ html(lang="en")
         main
             div#welcome
                 form
-                    input(placeholder="소켓 io room의 기능" , required , type="text")
+                    input(placeholder="방네임" , required , type="text")
                     button JOIN / CREATE ROOM
+            div#room 
+                h3
+                ul 
+                form#msg
+                    input(placeholder="메시지" , required , type="text")
+                    button 전송
         script(src="/socket.io/socket.io.js")
         script(src="/public/js/app.js")
     

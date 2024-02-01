@@ -31,12 +31,33 @@ const httpServer = http.createServer(app);
 const wsServer = SocketIO(httpServer);
 
 wsServer.on("connection" , (socket) => {
-  socket.on("enter_room" , (msg, done) => {
-    console.log(msg);
-    setTimeout(() => {
-      done();
-    } , 1000);
+  socket["nickname"] = "Anon";
+  //onAny -> 언제,어디서나 사용 가능하게 해주는 것
+  socket.onAny((event) => {
+    console.log(`Socket Event: ${event}`);
   });
+
+  //done이 프론트에서 보낸 벡엔드를 실행시키는 것
+  socket.on("enter_room" , (roomName , done) => {
+   socket.join(roomName);//누군가 참여한 걸 알려줌
+   done();
+   //룸안에 있는 사람들에게 emit(방출)함 + 닉네임과 함께
+   socket.to(roomName).emit("welcome", socket.nickname); 
+});
+//누군가 방을 나간 걸 알려줌
+socket.on("disconnecting", () => {
+  socket.rooms.forEach((room) => 
+  socket.to(room).emit("bye", socket.nickname)
+  );
+});
+
+//메시지(채팅) + room을 넣으면서 어디에 메시지를 보내는 지 알게 됨
+socket.on("new_message" , (msg,room,done) => {
+  socket.to(room).emit("new_message" , `${socket.nickname}:${msg}`);
+  done();
+});
+socket.on("nickname", (nickname) =>
+(socket["nickname"]= nickname));
 });
 
 const handleListen = () =>
@@ -52,7 +73,7 @@ httpServer.listen(3000,handleListen);
 
 
 
-/* 소켓 -> 소켓 io 사용하기 위함 
+/* 소켓 -> 소켓 io 사용하기 위해 주석함
 //페이크 디비 생성 (모든 브라우저가 소켓을 받게 하기 위함)
 const sockets = [];
 
