@@ -10,12 +10,18 @@ html(lang="en")
         link(rel="stylesheet", href="https://unpkg.com/mvp.css")
     body
         header
-            h1 Nambin
+            h1 NamBinBOT
         main
+            div#nickname
+                form
+                    input(placeholder="닉네임" , required , type="text" , autofocus)
+                    button SAVE
+                    
             div#welcome
                 form
                     input(placeholder="방네임" , required , type="text")
-                    button JOIN / CREATE ROOM
+                    button JOIN 
+            
             div#room 
                 h3
                 ul 
