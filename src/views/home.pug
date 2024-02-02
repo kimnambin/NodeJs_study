@@ -5,30 +5,17 @@ html(lang="en")
     head
         meta(charset="UTF-8")
         meta(name="viewport", content="width=device-width, initial-scale=1.0")
-        title Noom
+        title video clone coding
        
         link(rel="stylesheet", href="https://unpkg.com/mvp.css")
     body
         header
-            h1 NamBinBOT
+            h1 video clone coding
         main
-            div#nickname
-                form
-                    input(placeholder="닉네임" , required , type="text" , autofocus)
-                    button SAVE
-
-            div#welcome
-                form
-                    input(placeholder="방네임" , required , type="text")
-                    button JOIN 
-                h4 입장 가능한 방들:
-                ul
-            div#room 
-                h3
-                ul 
-                form#msg
-                    input(placeholder="메시지" , required , type="text")
-                    button 전송
+            div#myStream
+            video#myFace(autoplay.playsinline , width="400", height = "400" )
+            button#mute 음소거
+            button#camera 카메라
         script(src="/socket.io/socket.io.js")
         script(src="/public/js/app.js")
     
