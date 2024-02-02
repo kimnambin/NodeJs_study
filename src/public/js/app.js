@@ -84,23 +84,34 @@ function handleNickName(event){
 
 nicknameForm.addEventListener("submit" , handleNickName);
 
-socket.on('greeting' , (nickname) => {
+socket.on('welcome' , (nickname, newCount) => {
+    const h3 = room.querySelector("h3");
+    h3.innerText = `Room ${roomName} (${newCount})`;
+    
     addMessage(`${nickname} 입장!!`);
 });
 
-socket.on("bye", (nickname)=> {
+socket.on("bye", (nickname , newCount )=> {
+    const h3 = room.querySelector("h3");
+    h3.innerText = `Room ${roomName} (${newCount})`;
     addMessage(`${nickname} 나감 ㅜ.ㅜ`);
 } );
 
-// //서버에서 실행할 수 있게함 -> 룸안에 있는 사람들에게 emit(방출)하는걸
-// socket.on("welcome", (user)=> {
-//     addMessage(`${user}입장!!`);
-// });
-
-// //방에 누가 나갈걸 알려주는 메시지
-// socket.on("bye", (left)=> {
-//     addMessage(`${left}나감 ㅜ.ㅜ`);
-// } );
-
 
 socket.on("new_message", addMessage);
+
+//룸 체인지 (방 모든 사람들에게 알리는 거)
+socket.on ("room_change" , (rooms) => {
+    //welcome의 ul를 받아서 roomlist로 만듦
+    const roomList = welcome.querySelector("ul");
+    roomList.innerHTML = ""
+    if(rooms.length === 0){//방이 0이면 모든 것을 비워줌 
+   
+    return;
+}
+    rooms.forEach((room) => {
+        const li = document.createElement("li");
+        li.innerText = room;
+        roomList.append(li);
+    });
+});

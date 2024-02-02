@@ -30,8 +30,27 @@ app.get("/*", (_, res) => res.redirect("/"));
 const httpServer = http.createServer(app);
 const wsServer = SocketIO(httpServer);
 
+//아답터를 이용한 공개방을 알려주는 함수 //고유한 방(sids) + wsserver 정보 가져오기
+function publicRooms(){
+  const { sockets : {
+    adapter : { sids, rooms }, },
+  }= wsServer;
+  const publicRooms = [];
+  rooms.forEach((_,key) => {
+    if (sids.get(key) === undefined ){
+      publicRooms.push(key);
+    }
+  });
+return publicRooms;
+}
+
+//방에 들어온 사람 수 카운트
+function countRoom(roomName) {
+  return wsServer.sockets.adapter.rooms.get(roomName)?.size;
+}
+
+
 wsServer.on("connection" , (socket) => {
-  
   //onAny -> 언제,어디서나 사용 가능하게 해주는 것
   socket.onAny((event) => {
     console.log(`Socket Event: ${event}`);
@@ -42,12 +61,16 @@ wsServer.on("connection" , (socket) => {
    socket.join(roomName);//누군가 참여한 걸 알려줌
    showRoom(roomName);
    //룸안에 있는 사람들에게 emit(방출)함 + 닉네임과 함께
-   socket.to(roomName).emit("welcome", socket["nickname"]); 
+   socket.to(roomName).emit("welcome", socket["nickname"] , countRoom(roomName)); 
+  
+  //다른 브라우저에서 방이 만들어졌을 때 publicRooms에 알리기 위함
+   wsServer.sockets.emit("room_change" , publicRooms()); 
 
    //메시지 옆에 닉네임
    socket.on("message" , (msg , addMessage) => {
-    message = `${socket["nickname"]} : ${msg}`;
+    message = ` ${socket["nickname"]}  : ${msg}`;
     socket.to(roomName).emit("Message" , msg , addMessage(msg));
+   
    });
 });
 
@@ -55,9 +78,16 @@ wsServer.on("connection" , (socket) => {
 socket.on("disconnecting", () => {
  
   socket.rooms.forEach((room) => 
-    socket.to(room).emit("bye", socket.nickname)
+    socket.to(room).emit("bye", socket.nickname , countRoom(room) -1)
   );
 });
+
+ //룸 체인지도 떠났다고 알림
+socket.on("disconnect", () => {
+    wsServer.sockets.emit("room_change", publicRooms());
+  });
+
+
 
 //메시지(채팅) + room을 넣으면서 어디에 메시지를 보내는 지 알게 됨
 socket.on("new_message" , (msg, room, done) => {
@@ -73,39 +103,3 @@ console.log(`Listening on http://localhost:3000`);
 httpServer.listen(3000,handleListen);
 
 
-
-
-
-
-
-
-
-
-/* 소켓 -> 소켓 io 사용하기 위해 주석함
-//페이크 디비 생성 (모든 브라우저가 소켓을 받게 하기 위함)
-const sockets = [];
-
-// ws에서의 이벤트 처리 -> 메시지 보내보기
-wss.on("connection", (socket)=> {
-  //모든 소켓이 메시지를 보내면 받을 수 있음 (모든 브라우저)
-    sockets.push(socket);
-    socket["nickname"] = "익명";
-    //서버와 연결 확인용
-    console.log("Connected to Browser ✅");
-    socket.on("close", onSocketClose);
-
-    //모든 소켓에 메시지 보내기
-    socket.on("message", (msg) => {
-      const message = JSON.parse(msg); //제이슨 형식으로 보내겠다.
-      switch (message.type) {
-        case "new_message":
-          //foreach는 배열하는 코드
-          sockets.forEach((aSocket) =>
-          //닉네임과 내용 보내기 
-            aSocket.send(`${socket.nickname}: ${message.payload}`)
-          );
-        case "nickname": 
-          socket["nickname"] = message.payload;
-      }
-    });
-  });*/
