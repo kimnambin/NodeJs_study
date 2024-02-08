@@ -12,3 +12,5 @@ Zoom Clone using Node.js WebRTC and Websockets.
 # ignore -> 뷰나 서버를 수정할 때만 노드몬이 실행 즉 public(기능)을 수정할 땐 노드몬 사용x
 
 # socket // server.js에서는 연결된 브라우저 // app.js에서는 서버로의 연결
+
+
