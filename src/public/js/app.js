@@ -14,32 +14,29 @@ let myStream; // stream = 비디오 + 오디오
 let muted = false; // 음소거 여부
 let cameraOff = false; // 카메라 여부
 let roomName;
+let myPeerConnection;
 
 // 다른 유저의 카메라 가져오기
 async function getCameras() {
-    try {
-        // 비디오가 가능한 카메라 디바이스만 가져오기
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        const cameras = devices.filter((device) => 
-            device.kind === "videoinput" );
-
-        //어떤 카메라를 선택했는 지 알 수 있게함    
-        const currentCamera = myStream.getVideoTracks()[0];
-            // 옵션 선택 -> 카메라 가종 선택
-            cameras.forEach((camera) => {
-            const option = document.createElement("option");
-            option.value = device.deviceId;
-            option.innerText = device.label;
-
-            if(currentCamera.label === camera.label) {
-                option.selected = true;
-               }
-            camerasSelect.appendChild(option);
-        });
+    try { // 비디오가 가능한 카메라 디바이스만 가져오기
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const cameras = devices.filter((device) => device.kind === "videoinput");
+       //어떤 카메라를 선택했는 지 알 수 있게함    
+      const currentCamera = myStream.getVideoTracks()[0];
+       // 옵션 선택 -> 카메라 가종 선택
+      cameras.forEach((camera) => {
+        const option = document.createElement("option");
+        option.value = camera.deviceId;
+        option.innerText = camera.label;
+        if (currentCamera.label === camera.label) {
+          option.selected = true;
+        }
+        camerasSelect.appendChild(option);
+      });
     } catch (e) {
-        console.log(e);
+      console.log(e);
     }
-}
+  }
 
 async function getMedia(deviceId) {
     //셀프카메라
@@ -106,23 +103,53 @@ camerasSelect.addEventListener("input", handleCameraChange);
 const welcome = document.getElementById ("welcome");
 const welcomeForm = welcome.querySelector("form");
 
-function startMedia(){
+async function initCall(){
     welcome.hidden = true;
     call.hidden = false;
     getMedia();
+    //양쪽 브라우저를 연결해주기
+    await getMedia();
+    makeConnection();
 }
 
-function handleWelcomeSubmit(event){
+async function handleWelcomeSubmit(event){
     event.preventDefault();
     const input = welcomeForm.querySelector("input");
-    socket.emit("join_room" , input.value, startMedia);
+    await initCall();
+    socket.emit("join_room" , input.value);
     roomName = input.value;
     input.value = "";
 }
 
+welcomeForm.addEventListener("submit" , handleWelcomeSubmit);
 
-  welcomeForm.addEventListener("submit" , handleWelcomeSubmit);
 
-socket.on("welcome", () => {
-    console.log("someone joined");
+//peer A (offer을 만듦) -> setLocalDescription
+socket.on("welcome", async () => {
+    //누군가 참여하면 알려주는 코드
+    const offer = await myPeerConnection.createOffer();
+    myPeerConnection.setLocalDescription(offer);
+    console.log("offer를 보낸다.");
+    socket.emit("offer", offer, roomName);
+    });
+
+//peer B (answer 생성)
+socket.on("offer", async (offer) => {
+    myPeerConnection.setRemoteDescription(offer);
+    const answer = await myPeerConnection.createAnswer();
+    myPeerConnection.setLocalDescription(answer);
+    socket.emit("answer" , answer , roomName);
 });
+
+//setRemoteDescription
+socket.on("answer", (answer) => {
+    myPeerConnection.setRemoteDescription(answer);
+});
+
+//RTC code
+function makeConnection() {
+    myPeerConnection = new RTCPeerConnection();
+    myStream
+      .getTracks()
+      .forEach((track) => myPeerConnection.addTrack(track, myStream));
+  }
