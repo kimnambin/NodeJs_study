@@ -8,21 +8,31 @@ html(lang="en")
         title video clone coding
        
         link(rel="stylesheet", href="https://unpkg.com/mvp.css")
+        
+
     body
         header
-            h1 video clone coding
+            h1 📹video clone coding
         main
             div#welcome
                 form
                     input(placeholder = "방 제목" , required , type = "text")
                     button 방 입장!!
             div#call
+                form#chatForm    
+                    input#chatInput(placeholder = "채팅치기" , required , type = "text")
+                    button#sendButton 보내기
+                div#chatMessages
+                    ul
                 div#myStream
                     video#myFace(autoplay,playsinline, width="400", height="400")
                     button#mute 음소거
                     button#camera 카메라
                     select#cameras
                     video#peerFace(autoplay,playsinline, width="400", height="400")
+                
         script(src="/socket.io/socket.io.js")
         script(src="/public/js/app.js")
+       
+    
     
