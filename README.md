@@ -1,10 +1,8 @@
 # ZOOM 클론코딩
 
 <div style="display: flex; justify-content: space-between;">
-    <img src="https://github.com/kimnambin/NodeJs_study/assets/127464935/9e08bbf4-d5d8-4be6-8d4b-94a0227d963e" >
-    <img src="https://github.com/kimnambin/NodeJs_study/assets/127464935/c433cac0-4e7a-458d-b181-e7ec9a2ac675">
-    <img src="https://github.com/kimnambin/NodeJs_study/assets/127464935/3338ee85-42bf-4967-9c83-3f4bf19866f6">
-</div>
+   <img src="https://github.com/kimnambin/NodeJs_study/assets/127464935/c433cac0-4e7a-458d-b181-e7ec9a2ac675" width="600">
+   </div>
 
 
 
