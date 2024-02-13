@@ -1,16 +1,37 @@
-# Noom
+# ZOOM 클론코딩
 
-Zoom Clone using Node.js WebRTC and Websockets.
+![스크린샷 2024-02-13 124402](https://github.com/kimnambin/NodeJs_study/assets/127464935/9e08bbf4-d5d8-4be6-8d4b-94a0227d963e)
+![안녕](https://github.com/kimnambin/NodeJs_study/assets/127464935/c433cac0-4e7a-458d-b181-e7ec9a2ac675)
+![클론코딩](https://github.com/kimnambin/NodeJs_study/assets/127464935/3338ee85-42bf-4967-9c83-3f4bf19866f6)
 
-# app.js -> 프론트 // server.js -->> back
-# 실행 방밥 mnpm run dev
 
-# nodemon.js에서 ecec는 server.js을 실행하기 위한 것
+## 🖥️ 프로젝트 소개
+노마드코더 강의를 보고 ZOOM 클론코딩을 하였습니다. https://nomadcoders.co/noom
+<br>
 
-# package.json에서 스크립트는 
-# 노드몬이 호출되면 거기 있는 server.js을 실행하는것
-# ignore -> 뷰나 서버를 수정할 때만 노드몬이 실행 즉 public(기능)을 수정할 땐 노드몬 사용x
+## 🕰️ 개발 기간
+* 24.01 - 24.02
 
-# socket // server.js에서는 연결된 브라우저 // app.js에서는 서버로의 연결
+
+## ⚙️ 개발 환경
+- `WEB`
+- `VS CODE`
+- `webSocket`
+<div class= "contanier" style="display:flex; flex-direction:row;">
+   <img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=node.js&logoColor=white"> 
+    <img src="https://img.shields.io/badge/Socket.IO-010101?style=for-the-badge&logo=socket.io&logoColor=white">
+
+    
+
+</div>
+
+
+## 🧑‍🤝‍🧑 인원
+1명
+
+## 📌 구현 내용
+- 비디오/오디오/채팅 가능
+- 각각 다른 브라우저에서 비디오/오디오/채팅 가능
+- 카메라/비디오 ON/OFF
 
 
