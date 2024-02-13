@@ -92,6 +92,13 @@ function handleCameraClick() {
 //카메라를 변경하게 해줌
 async function handleCameraChange() {
     await getMedia(camerasSelect.value);
+    if (myPeerConnection) { //다른 브라우저에서 카메라를 변경했는데 변경되지 않던 오류 해결
+        const videoTrack = myStream.getVideoTracks()[0];
+        const videoSender = myPeerConnection
+          .getSenders()
+          .find((sender) => sender.track.kind === "video");
+        videoSender.replaceTrack(videoTrack);
+      }
 }
 
 muteBtn.addEventListener("click", handleMuteClick);
@@ -106,20 +113,20 @@ const welcomeForm = welcome.querySelector("form");
 async function initCall(){
     welcome.hidden = true;
     call.hidden = false;
-    getMedia();
     //양쪽 브라우저를 연결해주기
     await getMedia();
     makeConnection();
 }
 
-async function handleWelcomeSubmit(event){
+
+async function handleWelcomeSubmit(event) {
     event.preventDefault();
     const input = welcomeForm.querySelector("input");
     await initCall();
-    socket.emit("join_room" , input.value);
+    socket.emit("join_room", input.value);
     roomName = input.value;
     input.value = "";
-}
+  }
 
 welcomeForm.addEventListener("submit" , handleWelcomeSubmit);
 
@@ -135,21 +142,55 @@ socket.on("welcome", async () => {
 
 //peer B (answer 생성)
 socket.on("offer", async (offer) => {
+    console.log("offer 왔다.");
     myPeerConnection.setRemoteDescription(offer);
     const answer = await myPeerConnection.createAnswer();
     myPeerConnection.setLocalDescription(answer);
     socket.emit("answer" , answer , roomName);
+    console.log("answer 보낸다.");
 });
 
 //setRemoteDescription
 socket.on("answer", (answer) => {
+    console.log("answer 왔다.");
     myPeerConnection.setRemoteDescription(answer);
 });
 
+ //인터넷 연결 상태 (브라우저가 서로 소통할 수 있게 하는 것)
+ socket.on("ice" , (ice) => {
+    console.log("candidate 왔다.");
+    myPeerConnection.addIceCandidate(ice);
+ });
+
 //RTC code
 function makeConnection() {
-    myPeerConnection = new RTCPeerConnection();
+    myPeerConnection = new RTCPeerConnection({
+        iceServers: [ //공공ip를 찾기 위한 stun서버 (구글 무료 제공용)
+          {
+            urls: [
+              "stun:stun.l.google.com:19302",
+              "stun:stun1.l.google.com:19302",
+              "stun:stun2.l.google.com:19302",
+              "stun:stun3.l.google.com:19302",
+              "stun:stun4.l.google.com:19302",
+            ],
+          },
+        ],
+      });
+    myPeerConnection.addEventListener("icecandidate", handleIce);
+    myPeerConnection.addEventListener("addstream", handleAddStream);
     myStream
       .getTracks()
       .forEach((track) => myPeerConnection.addTrack(track, myStream));
+  }
+
+  //data 교환
+  function handleIce(data) {
+    console.log("sent candidate");
+    socket.emit("ice", data.candidate, roomName);
+  }
+  
+  function handleAddStream(data) {
+    const peerFace = document.getElementById("peerFace");
+    peerFace.srcObject = data.stream;
   }
