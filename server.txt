@@ -1,0 +1,12 @@
+
+http 모듈 (ESM 방식)
+서버 만들기 -> 서버 실행
+
+<!-- 서버 만들기 -->
+import http from "http";
+
+const httpServer = http.createServer(app);
+
+<!-- 서버 실행 -->
+const handleListen = () => console.log(`Listening on http://localhost:3000`);
+httpServer.listen(3000, handleListen);
